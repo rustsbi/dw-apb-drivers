@@ -5,7 +5,9 @@
 
 use volatile_register::{RO, RW, WO};
 
-/// Standard DW_apb_gpio register layout with 32-bit accesses; optional registers depend on the SoC.
+// Synopsys DW_apb_gpio Databook 2.11a (June 2015), table 6-1, sections 6.3, 7.3 and 9.1.
+// This is the maximum register layout; access only the features implemented by the SoC.
+/// DW_apb_gpio layout for little-endian 32-bit MMIO; register availability depends on IP parameters.
 #[repr(C)]
 pub struct DwApbGpio {
     /// `0x00..0x30`: software port registers in A, B, C, D order.
@@ -31,13 +33,13 @@ pub struct DwApbGpio {
     /// `0x48 GPIO_DEBOUNCE`: optional port A input debounce, enabled by one.
     #[doc(alias = "GPIO_DEBOUNCE")]
     pub debounce: RW<PinBits>,
-    /// `0x4c GPIO_PORTA_EOI`: write one for each port A edge interrupt to clear.
+    /// `0x4c GPIO_PORTA_EOI`: write one to clear a port A edge interrupt; level interrupts are unaffected.
     #[doc(alias = "GPIO_PORTA_EOI")]
     pub interrupt_clear: WO<PinBits>,
-    /// `0x50..0x60 GPIO_EXT_PORTx`: sampled pin levels in A, B, C, D order.
+    /// `0x50..0x60 GPIO_EXT_PORTx`: external pin levels in A, B, C, D order; synchronization is optional.
     #[doc(alias("GPIO_EXT_PORTA", "GPIO_EXT_PORTB", "GPIO_EXT_PORTC", "GPIO_EXT_PORTD"))]
     pub external_port: [RO<PinBits>; 4],
-    /// `0x60 GPIO_LS_SYNC`: synchronize level interrupts to `pclk_intr`.
+    /// `0x60 GPIO_LS_SYNC`: level interrupt synchronization; read-only when `GPIO_PORTA_INTR = 0`.
     #[doc(alias = "GPIO_LS_SYNC")]
     pub level_sync: RW<LevelSync>,
     /// `0x64 GPIO_ID_CODE`: optional integration-specific identifier.
@@ -49,10 +51,10 @@ pub struct DwApbGpio {
     /// `0x6c GPIO_VER_ID_CODE`: component version in ASCII.
     #[doc(alias = "GPIO_VER_ID_CODE")]
     pub version: RO<u32>,
-    /// `0x70 GPIO_CONFIG_REG2`: encoded port widths, when enabled in the IP configuration.
+    /// `0x70 GPIO_CONFIG_REG2`: port widths minus one; reads zero when encoded parameters are disabled.
     #[doc(alias = "GPIO_CONFIG_REG2")]
     pub configuration2: RO<u32>,
-    /// `0x74 GPIO_CONFIG_REG1`: encoded capabilities, when enabled in the IP configuration.
+    /// `0x74 GPIO_CONFIG_REG1`: capabilities; reads zero when encoded parameters are disabled.
     #[doc(alias = "GPIO_CONFIG_REG1")]
     pub configuration1: RO<u32>,
 }
@@ -76,13 +78,14 @@ pub struct Port {
         "GPIO_SWPORTD_DDR"
     ))]
     pub direction: RW<PinBits>,
-    /// `+0x08 GPIO_SWPORTx_CTL`: optional source selection; zero software, one hardware.
+    /// `+0x08 GPIO_SWPORTx_CTL`: zero software, one hardware; `SINGLE_CTL` makes bit 0 control the whole port.
     #[doc(alias(
         "GPIO_SWPORTA_CTL",
         "GPIO_SWPORTB_CTL",
         "GPIO_SWPORTC_CTL",
         "GPIO_SWPORTD_CTL"
     ))]
+    // GPIO_HW_PORTx enables this register; GPIO_PORTx_SINGLE_CTL selects one bit for the whole port.
     pub control: RW<u32>,
 }
 
