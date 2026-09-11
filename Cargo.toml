@@ -1,0 +1,11 @@
+[workspace]
+resolver = "3"
+members = ["dw-apb-gpio"]
+
+[workspace.package]
+edition = "2024"
+license = "MulanPSL-2.0 OR MIT"
+repository = "https://github.com/rustsbi/dw-apb-drivers"
+
+[workspace.dependencies]
+volatile-register = "0.2.2"
