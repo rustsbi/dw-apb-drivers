@@ -68,6 +68,24 @@ impl<'a> EintPadWithBothEdges<'a> {
         );
     }
 
+    /// Masks interrupt reporting without changing enable state or clearing pending events.
+    #[inline(always)]
+    pub fn mask_interrupt(&mut self) {
+        critical_section::with(
+            #[inline(always)]
+            |cs| ops::op_mask_interrupt(cs, &self.pad),
+        );
+    }
+
+    /// Unmasks interrupt reporting without enabling the interrupt or clearing pending events.
+    #[inline(always)]
+    pub fn unmask_interrupt(&mut self) {
+        critical_section::with(
+            #[inline(always)]
+            |cs| ops::op_unmask_interrupt(cs, &self.pad),
+        );
+    }
+
     /// Clears a pending edge interrupt; an active level interrupt remains pending.
     #[inline(always)]
     pub fn clear_interrupt(&mut self) {

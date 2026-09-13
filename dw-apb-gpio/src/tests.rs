@@ -178,6 +178,46 @@ fn temporary_modes_restore_on_return_and_unwind() {
 }
 
 #[test]
+fn interrupt_masking_preserves_enable_state_and_other_registers() {
+    macro_rules! check {
+        ($pad:ty) => {{
+            let mock = Mock::new();
+            // SAFETY: pin 31 is unique and the mock provides all interrupt registers.
+            let mut eint = unsafe { <$pad>::new(31, mock.gpio()) };
+            for enabled in [false, true] {
+                if enabled {
+                    eint.enable_interrupt();
+                } else {
+                    eint.disable_interrupt();
+                }
+                mock.write(0x30, mock.read(0x30) | 0x1234);
+                mock.write(0x34, 0x5a5a_a5a5);
+                mock.write(0x44, 0x8000_1234);
+                mock.write(0x4c, 0x55aa);
+                let before: [u32; 0x78 / 4] = core::array::from_fn(|i| mock.read(i * 4));
+                for masked in [true, true, false, false] {
+                    if masked {
+                        eint.mask_interrupt();
+                    } else {
+                        eint.unmask_interrupt();
+                    }
+                    for (i, &value) in before.iter().enumerate() {
+                        let expected = if i * 4 == 0x34 {
+                            (value & !(1 << 31)) | ((masked as u32) << 31)
+                        } else {
+                            value
+                        };
+                        assert_eq!(mock.read(i * 4), expected, "register offset {:#x}", i * 4);
+                    }
+                }
+            }
+        }};
+    }
+    check!(EintPad<'_>);
+    check!(EintPadWithBothEdges<'_>);
+}
+
+#[test]
 fn interrupt_events_masking_and_teardown() {
     let mock = Mock::new();
     mock.write(0x30, 1 << 8);

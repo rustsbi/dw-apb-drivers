@@ -171,6 +171,28 @@ pub(crate) fn op_disable_interrupt(_cs: CriticalSection<'_>, pad: &Pad<'_>) {
 }
 
 #[inline(always)]
+pub(crate) fn op_mask_interrupt(_cs: CriticalSection<'_>, pad: &Pad<'_>) {
+    // SAFETY: the owned pin is accessible and the token serializes the shared-register RMW.
+    unsafe {
+        write(
+            &pad.gpio.interrupt_mask,
+            read(&pad.gpio.interrupt_mask) | pad.mask,
+        );
+    }
+}
+
+#[inline(always)]
+pub(crate) fn op_unmask_interrupt(_cs: CriticalSection<'_>, pad: &Pad<'_>) {
+    // SAFETY: the owned pin is accessible and the token serializes the shared-register RMW.
+    unsafe {
+        write(
+            &pad.gpio.interrupt_mask,
+            read(&pad.gpio.interrupt_mask) & !pad.mask,
+        );
+    }
+}
+
+#[inline(always)]
 pub(crate) fn op_clear_interrupt(pad: &Pad<'_>) {
     // SAFETY: the owned port A pin has an accessible WO register backed by UnsafeCell;
     // the transparent wrappers preserve u32 layout, and only this pin's W1C bit is written.
