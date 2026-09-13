@@ -1,6 +1,6 @@
 [package]
 name = "dw-apb-gpio"
-description = "Synopsys DesignWare APB GPIO registers"
+description = "Synopsys DesignWare APB GPIO driver and registers"
 version = "0.0.0"
 edition.workspace = true
 license.workspace = true
@@ -9,4 +9,9 @@ keywords = ["gpio", "designware", "synopsys"]
 categories = ["embedded", "hardware-support", "no-std"]
 
 [dependencies]
+critical-section.workspace = true
+embedded-hal.workspace = true
 volatile-register.workspace = true
+
+[dev-dependencies]
+critical-section = { workspace = true, features = ["std"] }

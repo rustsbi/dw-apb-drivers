@@ -8,4 +8,6 @@ license = "MulanPSL-2.0 OR MIT"
 repository = "https://github.com/rustsbi/dw-apb-drivers"
 
 [workspace.dependencies]
+critical-section = "1.2.0"
+embedded-hal = "1.0.0"
 volatile-register = "0.2.2"
