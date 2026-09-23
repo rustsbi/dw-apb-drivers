@@ -1,4 +1,7 @@
 //! Access policies for destructive reads and command writes.
+//!
+//! Reference: RP2040 Datasheet §4.3.16 (table 451) and §4.3.17 entries for
+//! `IC_CLR_*`, `IC_ENABLE` and `IC_DATA_CMD`; see the README for the official PDF.
 
 use volatile_register::{RO, RW};
 
@@ -70,6 +73,7 @@ impl<T: Copy> ReadWriteCommand<T> {
 /// unsafe { registers.data_command.modify(|value| value); }
 /// # }
 /// ```
+#[doc(alias = "IC_DATA_CMD")]
 #[repr(transparent)]
 pub struct DataCommandRegister {
     register: RW<u32>,

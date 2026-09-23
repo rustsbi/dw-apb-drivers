@@ -1,29 +1,9 @@
 # DW APB I²C
 
 `no_std` register layer for Synopsys DW_apb_i2c with little-endian 32-bit MMIO
-accesses. It follows `dw-apb-gpio`: a `#[repr(C)]` block, documented offsets and
-hardware-name aliases, `volatile-register` accessors, and transparent typed
-values with `from_bits`, `bits` and setters that preserve unrelated bits.
-
-`DwApbI2c` covers the common register map through `IC_COMP_TYPE` at `0xfc`,
-including optional high-speed, slave and DMA registers. The reserved region
-`0xac..0xf4` is left unexposed; newer bus-clear and SMBus extensions are outside
-this initial implementation. This crate does not implement I²C transactions,
-`embedded-hal::i2c::I2c`, clock setup, pin configuration or peripheral ownership.
+accesses.
 
 ## Access semantics
-
-- `IC_DATA_CMD` has separate `DataCommand` and `ReceiveData` values. Reads pop
-  the receive FIFO; writes push transmit bytes or master read requests. Both
-  operations are unsafe and there is no `modify` method.
-- `IC_CLR_*` uses `ReadClear`: its unsafe read acknowledges events. It has no
-  write or modify method. Capture abort causes before clearing `IC_CLR_TX_ABRT`.
-- `IC_ENABLE` uses `ReadWriteCommand<Enable>` so a read-modify-write cannot
-  inadvertently replay the self-clearing ABORT command.
-- `IC_INTR_MASK` uses **one to unmask**, unlike GPIO's mask register.
-- Optional fields/registers must be checked against the SoC integration and
-  component version. Encoded-parameter helpers return `None` when
-  `ADD_ENCODED_PARAMS` is clear; they do not assume a FIFO depth.
 
 ```rust
 use dw_apb_i2c::{Control, DataCommand, InterruptBits, Speed, TargetAddress};
@@ -43,21 +23,15 @@ assert_eq!(last_read.bits(), 0x300);
 assert_eq!(mask.bits(), 0x200);
 ```
 
-Constructing values does not access hardware. Creating a register reference is
-the caller's responsibility: the region must be aligned, mapped and accessible,
-with clocks/reset established and no conflicting controller or DMA users.
-An 8/16-bit APB or byte-swapped integration needs a different access layer.
-`Default` means zero bits, not the hardware reset value or a working bus setup.
-
 ## References
 
-Register offsets and access policies were cross-checked against these primary
-implementation references; no SoC-specific reset values or FIFO depths are assumed:
-
-- [Linux DesignWare core definitions](https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-designware-core.h)
-- [U-Boot DesignWare register layout](https://github.com/u-boot/u-boot/blob/master/drivers/i2c/designware_i2c.h)
-- [Raspberry Pi RP2040 DesignWare register descriptions](https://github.com/raspberrypi/pico-sdk/blob/master/src/rp2040/hardware_regs/include/hardware/regs/i2c.h)
-
-Host tests check layout, field encodings, bounds, capability decoding and exact
-mock-memory accesses. Compile-fail doctests check that command and clear
-registers cannot use the wrong access policy. They do not simulate an I²C bus.
+- **Synopsys DW_apb_i2c Databook, 2.05a**: [official directory](https://www.synopsys.com/dw/ipdir.php?c=DW_apb_i2c),
+- **Raspberry Pi RP2040 Datasheet**, build 3184e62-clean, 2025-02-20 —
+  [§4.3.17, List of Registers](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf#page=465)
+  for register/bit-field names and access types;
+  §4.3.16, Operation of Interrupt Registers (table 451), for read-clear semantics;
+  §4.3.15, DMA Controller Interface, for `RDMAE`/`TDMAE`.
+- **Intel Core Ultra Series 3 Processors I/O Registers**, document 872352,
+  revision 001, 2026-04-14:
+  [I2C MMIO, REG IC_CON and the linked register chapters](https://edc.intel.com/content/www/de/de/design/publications/core-ultra-series-3-processors-i-o-registers/reg-ic-con-ic-con-offset-0/),
+  including `IC_HS_MADDR`, `IC_HS_SCL_HCNT`, `IC_HS_SCL_LCNT` and `IC_HS_SPKLEN`.

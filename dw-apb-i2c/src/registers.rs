@@ -14,8 +14,10 @@ use crate::{
 /// high-speed support depend on synthesis and SoC integration. The reserved gap
 /// after `0xa8` includes newer bus-clear/SMBus extensions not modeled here.
 ///
-/// References: Linux `i2c-designware-core.h`, U-Boot `designware_i2c.h` and the
-/// RP2040 register reference. See the crate README for source links.
+/// IP reference: Synopsys DW_apb_i2c Databook 2.05a (SolvNet login required).
+/// Public name/access references: RP2040 Datasheet §4.3.17, and Intel document
+/// 872352 revision 001, I2C MMIO register chapters (including high-speed registers).
+/// See the crate README for links and the distinction between these sources.
 #[doc(alias = "DW_apb_i2c")]
 #[repr(C)]
 pub struct DwApbI2c {
