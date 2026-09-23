@@ -1,0 +1,12 @@
+[package]
+name = "dw-apb-i2c"
+description = "Synopsys DesignWare APB I2C registers"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["i2c", "designware", "synopsys"]
+categories = ["embedded", "hardware-support", "no-std"]
+
+[dependencies]
+volatile-register.workspace = true
