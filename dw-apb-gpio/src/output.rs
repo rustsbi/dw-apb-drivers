@@ -1,5 +1,3 @@
-use core::convert::Infallible;
-
 use embedded_hal::digital::{ErrorType, OutputPin, PinState, StatefulOutputPin};
 
 use crate::{
@@ -138,7 +136,7 @@ impl Output<'_> {
 }
 
 impl ErrorType for Output<'_> {
-    type Error = Infallible;
+    type Error = !;
 }
 
 impl OutputPin for Output<'_> {

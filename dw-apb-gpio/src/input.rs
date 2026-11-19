@@ -1,5 +1,3 @@
-use core::convert::Infallible;
-
 use embedded_hal::digital::{ErrorType, InputPin, PinState};
 
 use crate::{
@@ -106,7 +104,7 @@ impl Input<'_> {
 }
 
 impl ErrorType for Input<'_> {
-    type Error = Infallible;
+    type Error = !;
 }
 
 impl InputPin for Input<'_> {

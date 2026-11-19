@@ -1,5 +1,3 @@
-use core::convert::Infallible;
-
 use embedded_hal::digital::{ErrorType, InputPin, OutputPin, PinState, StatefulOutputPin};
 
 use crate::{
@@ -197,7 +195,7 @@ impl FlexPad<'_> {
 }
 
 impl ErrorType for FlexPad<'_> {
-    type Error = Infallible;
+    type Error = !;
 }
 
 impl InputPin for FlexPad<'_> {

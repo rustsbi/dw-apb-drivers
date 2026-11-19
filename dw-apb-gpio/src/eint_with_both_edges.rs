@@ -1,5 +1,3 @@
-use core::convert::Infallible;
-
 use embedded_hal::digital::{ErrorType, InputPin, PinState};
 
 use crate::{input::Input, ops, output::Output, pad::Pad, registers::DwApbGpio};
@@ -136,7 +134,7 @@ impl EintPadWithBothEdges<'_> {
 }
 
 impl ErrorType for EintPadWithBothEdges<'_> {
-    type Error = Infallible;
+    type Error = !;
 }
 
 impl InputPin for EintPadWithBothEdges<'_> {
